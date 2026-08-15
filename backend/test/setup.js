@@ -1,20 +1,20 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const { MongoMemoryReplSet } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 
-let mongoServer;
+let mongoReplSet;
 
-// Start in-memory MongoDB before all tests
+// Start in-memory MongoDB replica set before all tests
 beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const uri = mongoServer.getUri();
+    mongoReplSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+    const uri = mongoReplSet.getUri();
     await mongoose.connect(uri);
 });
 
 // Stop in-memory MongoDB after all tests
 afterAll(async () => {
     await mongoose.connection.close();
-    if (mongoServer) {
-        await mongoServer.stop();
+    if (mongoReplSet) {
+        await mongoReplSet.stop();
     }
 });
 

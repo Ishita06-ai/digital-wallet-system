@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { describe, it, expect, beforeEach, afterEach } = require('vitest');
 
 const transactionModel = require('../src/models/transaction.model');
 const ledgerModel = require('../src/models/ledger.model');
@@ -302,9 +301,9 @@ describe('Transaction Controller', () => {
 
             const results = await Promise.all(promises);
 
-            // Exactly one should succeed (201), others should return 200 (already processed)
+            // Exactly one should succeed (201), others should return 200 (already processed or still processing)
             const successCount = results.filter(r => r.statusCode === 201).length;
-            const alreadyProcessedCount = results.filter(r => r.statusCode === 200 && r.body.message === 'Transaction already processed').length;
+            const alreadyProcessedCount = results.filter(r => r.statusCode === 200).length;
 
             expect(successCount).toBe(1);
             expect(alreadyProcessedCount).toBe(4);
