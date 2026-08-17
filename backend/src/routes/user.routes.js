@@ -3,13 +3,14 @@ const { authMiddleware } = require("../middleware/auth.middleware");
 const accountModel = require("../models/account.model");
 const userModel = require("../models/user.model");
 const FundRequest = require("../models/fundRequest.model")
+const { validateRequestFunds } = require("../validators");
 const router = express.Router();
 
 /**
  * POST /api/user/request-funds
  * User requests funds from admin
  */
-router.post("/request-funds", authMiddleware, async (req, res) => {
+router.post("/request-funds", authMiddleware, validateRequestFunds, async (req, res) => {
 
   try {
 

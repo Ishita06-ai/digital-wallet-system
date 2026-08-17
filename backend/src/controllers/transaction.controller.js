@@ -67,6 +67,16 @@ async function createTransaction(req, res) {
             })
         }
 
+        // 2a. Verify the authenticated user owns the fromAccount
+        // Prevent an authenticated user from spending from another user's account
+        if (fromUserAccount.user.toString() !== req.user._id.toString()) {
+            await session.abortTransaction()
+            session.endSession()
+            return res.status(403).json({
+                message: "You do not have permission to transfer from this account"
+            })
+        }
+
         if (fromUserAccount.status !== "active" || toUserAccount.status !== "active") {
             await session.abortTransaction()
             session.endSession()

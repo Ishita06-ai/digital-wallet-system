@@ -6,15 +6,27 @@ const {
 
 const transactionController = require("../controllers/transaction.controller");
 const transactionModel = require("../models/transaction.model");
+const { validateCreateTransaction, validateInitialFunds, validateTransactionHistory } = require("../validators");
 
 const router = Router();
 
 /**
  * GET transactions for account
  */
-router.get("/:accountId", authMiddleware, async (req, res) => {
+router.get("/:accountId", authMiddleware, validateTransactionHistory, async (req, res) => {
 
   try {
+
+    // Verify the requested account belongs to the authenticated user
+    const account = await accountModel.findById(req.params.accountId);
+    if (!account) {
+      return res.status(404).json({ message: "Account not found" });
+    }
+
+    // IDOR prevention: ensure user owns the account
+    if (account.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Access denied: You can only view your own transaction history" });
+    }
 
     const transactions = await transactionModel.find({
       $or: [
@@ -40,7 +52,7 @@ router.get("/:accountId", authMiddleware, async (req, res) => {
 /**
  * User transaction
  */
-router.post("/", authMiddleware, transactionController.createTransaction);
+router.post("/", authMiddleware, validateCreateTransaction, transactionController.createTransaction);
 
 /**
  * Admin seeding initial funds
@@ -48,6 +60,7 @@ router.post("/", authMiddleware, transactionController.createTransaction);
 router.post(
   "/system/initial-funds",
   authSystemUserMiddleware,
+  validateInitialFunds,
   transactionController.createInitialFundsTransaction
 );
 

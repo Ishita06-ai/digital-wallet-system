@@ -14,27 +14,23 @@ const {
   getPendingRequests
 } = require("../controllers/admin.controller");
 
+const { validateApproveFunds, validateSeedFunds } = require("../validators");
+
 
 // GET pending users
 router.get("/pending-users", authSystemUserMiddleware, getPendingUsers);
 
 // GET pending fund requests
-router.get("/pending-requests", getPendingRequests);
+router.get("/pending-requests", authSystemUserMiddleware, getPendingRequests);
 
 // APPROVE fund request
-router.post("/approve-funds", authSystemUserMiddleware, approveFundRequest);
+router.post("/approve-funds", authSystemUserMiddleware, validateApproveFunds, approveFundRequest);
 
 
 // Seed funds manually
-router.post("/seed-funds", authSystemUserMiddleware, async (req, res) => {
+router.post("/seed-funds", authSystemUserMiddleware, validateSeedFunds, async (req, res) => {
 
   const { userId, amount, idempotencyKey } = req.body;
-
-  if (!userId || !amount || !idempotencyKey) {
-    return res.status(400).json({
-      message: "userId, amount, idempotencyKey required"
-    });
-  }
 
   try {
 
